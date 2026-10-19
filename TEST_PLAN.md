@@ -77,3 +77,56 @@ Order lifecycle status/action mapping, DST days, XBID trades, and any template/c
 
 ## Out of scope
 Non-continuous (auction) markets, non-standard contracts, transport/submission to ACER.
+
+---
+
+# LISE Task Manager – REMIT_AU Tasks 1 & 2 (Manual UI Test Plan)
+
+Application: LISE (TASK Manager System), TEST environment, tab **REMIT_AU**, group "Reporting of EU Main transactions AU".
+Flow: login → REMIT_AU tab → set Execution date (Period field) → click task link → SQL script runs against the
+source DB → output file generated per the mapping document → file stored on SFTP.
+
+## Preconditions
+- Valid user (admin role) with access to the REMIT_AU tab; SFTP target folder reachable and writable.
+- Source data exists for the chosen execution date (orders/trades for several members), plus one date with no data.
+- Mapping document (`REMIT_XML_report_mapping_standard_contracts_Continuous.xlsx`) available as the oracle.
+- Note the SFTP folder contents and the task's "Last execution" before each run.
+
+## Task 1 – Generate EU Main transactions AU reports (One per member)
+| ID | Scenario | Steps | Expected |
+|----|----------|-------|----------|
+| L1 | Login & navigation | Log in, open REMIT_AU tab | Task list shown; user name/version/environment in header |
+| L2 | Happy path | Enter valid date in Period field, click task 1 | Task runs; Last execution updated; no error in Error Log |
+| L3 | One file per member | Compare files on SFTP with members having data for that date | Exactly one file per member; naming convention respected |
+| L4 | Content vs mapping | Open files, compare tags/values to mapping document and source DB (see sections above) | All mandatory tags present; values match mappings; XSD-valid |
+| L5 | SFTP storage | Check SFTP folder | Files present, correct path, permissions, non-zero size, timestamp |
+| L6 | Date handling | Dates: today, past, future, weekend, DST change day, invalid format, blank | Valid dates run; invalid/blank rejected with clear message; no file produced on rejection |
+| L7 | Date selection | Execution date differs from default (e.g. 25/10/2026) | Data and filenames reflect the selected date, not the default |
+| L8 | No data date | Run for date with no activity | Graceful result (empty/no files per design); no crash |
+| L9 | Re-run | Run twice for same date | Files overwritten or versioned per design; no duplicates/corruption |
+| L10 | Failure handling | DB unavailable / SFTP unavailable / bad permission | Task shows error state and logs in Error Log; no partial/corrupt files |
+| L11 | Auto/Manual flags | Verify Auto checkbox, Time (03h00) and state indicators | Schedule info correct; manual run does not alter schedule |
+| L12 | Double click / concurrency | Click task twice quickly; run from two sessions | Single execution or queued; no duplicate files |
+| L13 | Security | Non-admin user, logged-out session | Access denied / redirect to login |
+
+## Task 2 – Count the number of records per file
+| ID | Scenario | Steps | Expected |
+|----|----------|-------|----------|
+| C1 | Happy path | Run Task 1, then Task 2 with the same date | Count produced for every generated file |
+| C2 | Accuracy | Independently count OrderReport + TradeReport entries in each file | Counts match exactly |
+| C3 | Date alignment | Run Task 2 with a date for which Task 1 was not run | Clear message/zero result; no stale counts |
+| C4 | Empty / one-record files | Member with a single record or none | Correct count (1 / 0) |
+| C5 | Large file | Member with high volume | Count correct, task completes in acceptable time |
+| C6 | Output location | Where the count is reported (output display / log / DB) | Result visible with "Enable output display" ticked; file names listed |
+| C7 | Dependency | Run Task 2 before Task 1 | Handled gracefully |
+
+## Regression / downstream
+Tasks 3–7 (check vs Auction DB, send to back office, EQUIAS, ACER, ELCOM) consume Task 1 output: confirm they still run on the generated files.
+
+## Evidence to capture
+Screenshots of the task list before/after, SFTP listing, sample file, SQL/DB counts, Error Log entries; record pass/fail per ID.
+
+## Open questions
+- Exact file naming convention and SFTP path; overwrite vs versioning policy.
+- Where Task 2 publishes its results.
+- Expected behaviour for blank/future dates and "Period" checkbox meaning.
