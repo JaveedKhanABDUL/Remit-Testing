@@ -18,6 +18,9 @@ class LoginPage(BasePage):
             "#input-error, .pf-v5-c-alert.pf-m-danger, .kc-feedback-text"
         )
 
+    def error_text(self) -> str:
+        return self.alert_error.first.inner_text().strip()
+
     def login(self, username: str, password: str) -> None:
         self.username_input.fill(username)
         self.password_input.fill(password)

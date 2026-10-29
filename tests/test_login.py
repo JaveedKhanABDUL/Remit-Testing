@@ -2,6 +2,7 @@ import pytest
 from playwright.sync_api import expect
 
 from config import settings
+from pages.home_page import HomePage
 
 
 def test_login_page_elements(login_page):
@@ -29,4 +30,4 @@ def test_invalid_login_shows_error(login_page):
 )
 def test_valid_login(login_page):
     login_page.login(settings.USERNAME, settings.PASSWORD)
-    expect(login_page.sign_in_button).to_be_hidden()
+    HomePage(login_page.page).expect_logged_in()
