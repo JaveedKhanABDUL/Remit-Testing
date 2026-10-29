@@ -10,9 +10,13 @@ def main() -> int:
     parser.add_argument("--headed", action="store_true", help="show the browser")
     parser.add_argument("--browser", default="chromium",
                         choices=["chromium", "firefox", "webkit"])
+    parser.add_argument("--channel", default="chrome",
+                        help="installed browser to use (chrome, msedge); 'bundled' uses Playwright's own")
     args, extra = parser.parse_known_args()
 
     pytest_args = ["--browser", args.browser, *extra]
+    if args.channel != "bundled":
+        pytest_args += ["--browser-channel", args.channel]
     if args.headed:
         pytest_args.append("--headed")
     return pytest.main(pytest_args)

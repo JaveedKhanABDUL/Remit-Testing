@@ -12,7 +12,7 @@ tests/                 pytest tests and fixtures
 Setup:
 ```
 pip install -r requirements.txt
-playwright install chromium
+# no 'playwright install' needed: tests use your installed Google Chrome
 cp .env.example .env   # set BASE_URL, APP_USERNAME, APP_PASSWORD
 pytest                 # add --headed to watch; report in reports/report.html
 ```
@@ -28,9 +28,11 @@ tests/                 pytest tests and fixtures
 Setup:
 ```
 pip install -r requirements.txt
-playwright install chromium
+# no 'playwright install' needed: tests use your installed Google Chrome
 cp .env.example .env   # set BASE_URL, APP_USERNAME, APP_PASSWORD
 pytest                 # add --headed to watch; report in reports/report.html
 ```
 
 Run via entry point: `python run.py [--headed] [--browser firefox] [-k test_name]`
+
+By default `run.py` uses installed Chrome (`--channel chrome`); use `--channel msedge` for Edge or `--channel bundled` with `playwright install chromium`.
