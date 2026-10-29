@@ -36,3 +36,5 @@ pytest                 # add --headed to watch; report in reports/report.html
 Run via entry point: `python run.py [--headed] [--browser firefox] [-k test_name]`
 
 By default `run.py` uses installed Chrome (`--channel chrome`); use `--channel msedge` for Edge or `--channel bundled` with `playwright install chromium`.
+
+Plain `pytest` also uses installed Chrome (set in `pytest.ini`).

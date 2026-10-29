@@ -15,8 +15,8 @@ def main() -> int:
     args, extra = parser.parse_known_args()
 
     pytest_args = ["--browser", args.browser, *extra]
-    if args.channel != "bundled":
-        pytest_args += ["--browser-channel", args.channel]
+    channel = "chromium" if args.channel == "bundled" else args.channel
+    pytest_args += ["--browser-channel", channel]
     if args.headed:
         pytest_args.append("--headed")
     return pytest.main(pytest_args)
